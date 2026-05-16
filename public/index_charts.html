@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BOOSTA Bin Classifier | Analytics Charts Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<!-- Embed Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: hsl(222, 47%, 7%);
+  --surface: hsl(222, 47%, 11%);
+  --card: hsl(222, 47%, 15%);
+  --border: hsl(222, 30%, 25%);
+  --accent: hsl(38, 100%, 50%);
+  --accent-glow: hsla(38, 100%, 50%, 0.15);
+  --accent2: hsl(24, 100%, 50%);
+  --u1: hsl(84, 81%, 44%);
+  --u2: hsl(38, 92%, 50%);
+  --u3: hsl(0, 84%, 60%);
+  --u4: hsl(0, 72%, 30%);
+  --u5: hsl(0, 72%, 30%);
+  --text: hsl(214, 32%, 96%); /* Brighter for clarity */
+  --muted: hsl(215, 25%, 75%); /* Lighter for clarity */
+  --r: 16px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 1.05rem; /* Slightly larger */
+  background: var(--bg);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(38, 100%, 50%, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(222, 47%, 20%, 0.1) 0px, transparent 50%);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* NAV */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: hsla(222, 47%, 11%, 0.8);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.logo-badge {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  box-shadow: 0 4px 12px hsla(38, 100%, 50%, 0.3);
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.nav-tab {
+  padding: 8px 24px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.nav-tab.active {
+  background: var(--card);
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.nav-tab:hover:not(.active) {
+  color: var(--text);
+  background: hsla(222, 30%, 25%, 0.3);
+}
+
+/* VIEWS */
+.view {
+  display: none;
+  padding: 2rem;
+  max-width: 1240px;
+  margin: 0 auto;
+  animation: viewEnter 0.4s ease-out;
+}
+
+@keyframes viewEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.view.active { display: block; }
+
+/* STATS BAR */
+.stats-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+  text-align: left;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.stat-num {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+  background: linear-gradient(to bottom, #fff, var(--muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* CHARTS SECTION */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  position: relative;
+}
+
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* FORM */
+.form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 760px;
+  margin: 0 auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.form-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 32px;
+  letter-spacing: -0.02em;
+}
+
+.form-group { margin-bottom: 24px; }
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+input[type=text], textarea, .search-bar {
+  width: 100%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+input[type=text]:focus, textarea:focus, .search-bar:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--r);
+  padding: 48px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg);
+  position: relative;
+}
+
+.drop-zone:hover {
+  border-color: var(--accent);
+  background: hsla(38, 100%, 50%, 0.03);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: hsla(38, 100%, 50%, 0.1);
+  transform: scale(1.02);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.drop-icon { font-size: 3rem; margin-bottom: 16px; display: block; }
+.drop-label { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+.drop-sub { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+
+@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* BOOSTA CHECKBOXES */
+.boosta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.boosta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.boosta-item:hover {
+  border-color: var(--accent);
+  background: var(--card);
+}
+
+.boosta-item input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.boosta-letter { font-weight: 900; font-size: 1.25rem; color: var(--accent); }
+.boosta-text { font-size: 0.85rem; color: var(--muted); font-weight: 500; line-height: 1.4; }
+
+/* URGENCY */
+.urgency-row { display: flex; gap: 8px; }
+.urg-btn {
+  flex: 1;
+  padding: 16px 0;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.urg-label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.urg-btn.sel { border-width: 2px; }
+.urg-btn[data-u="1"].sel { border-color: var(--u1); background: hsla(84, 81%, 44%, 0.1); color: var(--u1); }
+.urg-btn[data-u="2"].sel { border-color: var(--u2); background: hsla(38, 92%, 50%, 0.1); color: var(--u2); }
+.urg-btn[data-u="3"].sel { border-color: var(--u3); background: hsla(0, 84%, 60%, 0.1); color: var(--u3); }
+.urg-btn[data-u="4"].sel { border-color: var(--u4); background: hsla(0, 72%, 30%, 0.3); color: #ff9999; }
+.urg-btn[data-u="5"].sel { border-color: var(--u4); background: hsla(0, 72%, 30%, 0.3); color: #ff9999; }
+
+/* SUBMIT BTN */
+.btn-submit {
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000;
+  font-weight: 900;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 8px 24px hsla(38, 100%, 50%, 0.25);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px hsla(38, 100%, 50%, 0.4);
+}
+
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.6; cursor: wait; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* DASHBOARD */
+.dash-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--surface);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.dash-title { font-size: 1.5rem; font-weight: 800; }
+
+.filter-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+.filter-btn.active, .filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--card);
+}
+
+.bins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+.bin-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: var(--transition);
+  animation: cardFadeIn 0.5s ease-out;
+}
+
+.bin-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bin-img {
+  width: 100%;
+  height: 220px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bin-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.bin-card:hover .bin-img img { transform: scale(1.05); }
+
+.bin-body { padding: 24px; }
+
+.bin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.bin-id { font-weight: 800; font-size: 1.1rem; color: #fff; }
+
+.urg-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.u1 { background: hsla(84, 81%, 44%, 0.15); color: var(--u1); }
+.u2 { background: hsla(38, 92%, 50%, 0.15); color: var(--u2); }
+.u3 { background: hsla(0, 84%, 60%, 0.15); color: var(--u3); }
+.u4 { background: hsla(0, 72%, 30%, 0.3); color: #ff9999; }
+.u5 { background: hsla(0, 72%, 30%, 0.3); color: #ff9999; }
+
+.bin-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.boosta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.b-tag {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent-glow);
+}
+
+.bin-meta {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.bin-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+.btn-sm {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: var(--transition);
+}
+
+.btn-sm:hover { border-color: var(--text); color: var(--text); }
+.btn-resolve { border-color: hsla(142, 71%, 45%, 0.3); color: var(--u1); }
+.btn-resolve:hover { background: hsla(142, 71%, 45%, 0.1); }
+.btn-delete { border-color: hsla(0, 84%, 60%, 0.3); color: var(--u4); }
+.btn-delete:hover { background: hsla(0, 84%, 60%, 0.1); }
+
+.resolved-tag { opacity: 0.6; filter: grayscale(0.5); }
+.empty-state { text-align: center; padding: 100px 20px; color: var(--muted); }
+.empty-icon { font-size: 5rem; margin-bottom: 24px; opacity: 0.5; }
+
+/* AGING BADGES */
+.aging-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.age-badge { padding: 10px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.age-3h { border-color: #fbbf24; color: #fbbf24; background: rgba(251, 191, 36, 0.05); }
+.age-6h { border-color: #f97316; color: #f97316; background: rgba(249, 115, 22, 0.05); }
+.age-12h { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+.age-24h { border-color: #991b1b; background: rgba(153, 27, 27, 0.2); color: #fca5a5; animation: pulse 2s infinite; }
+.age-0h { border-color: var(--u1); color: var(--u1); background: rgba(34, 197, 94, 0.05); }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+.sort-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.sort-select:focus { outline: none; border-color: var(--accent); }
+
+/* HEATMAP STYLES */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.aisle-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.aisle-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.aisle-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.aisle-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.heat-level {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 6px;
+  width: 100%;
+}
+
+.heat-low { background: var(--u1); box-shadow: 0 0 15px var(--u1); }
+.heat-mid { background: var(--u2); box-shadow: 0 0 15px var(--u2); }
+.heat-high { background: var(--u3); box-shadow: 0 0 15px var(--u3); }
+.heat-critical { background: var(--u4); box-shadow: 0 0 20px var(--u4); animation: heatPulse 1.5s infinite; }
+
+@keyframes heatPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* FULL SCREEN IMAGE OVERLAY */
+.image-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 2000;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.image-overlay img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 50px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
+}
+
+.image-overlay:hover img {
+  transform: scale(1.02);
+}
+
+.close-overlay {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 2001;
+  transition: 0.3s;
+}
+
+.close-overlay:hover {
+  color: var(--accent);
+  transform: scale(1.2);
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <span class="logo-badge">BOOSTA</span>
+    Bin Classifier <span style="font-size:0.75rem; color:var(--accent); font-weight:700; border:1px solid var(--accent); padding:2px 6px; border-radius:6px; margin-left:6px;">CHARTS</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('submit')">📋 Report Bin</button>
+    <button class="nav-tab" onclick="showView('dashboard')">📊 Dashboard</button>
+    <button class="nav-tab" onclick="showView('heatmap')">🗺️ Heatmap</button>
+  </div>
+</nav>
+
+<!-- SUBMIT VIEW -->
+<div class="view active" id="view-submit">
+  <div class="form-card">
+    <div class="form-title">🗃️ Report a Bin Issue</div>
+
+    <div class="row2">
+      <div class="form-group">
+        <label>Bin ID (optional)</label>
+        <input type="text" id="bin_id" placeholder="e.g. A-12-3"/>
+      </div>
+      <div class="form-group">
+        <label>Aisle / Zone</label>
+        <input type="text" id="aisle" placeholder="e.g. Aisle 5"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Reported By</label>
+      <input type="text" id="reported_by" placeholder="Your name or associate ID"/>
+    </div>
+
+    <div class="form-group">
+      <label>📷 Bin Photo</label>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="image-input" accept="image/*" onchange="handleFile(this.files[0])"/>
+        <div class="drop-icon">📦</div>
+        <div class="drop-label">Click or drag photo here</div>
+        <div class="drop-sub">JPG, PNG, WEBP — max 16 MB</div>
+      </div>
+      <div id="preview-wrap"><img id="preview-img" src="" alt="preview" style="cursor: zoom-in;" onclick="openFullScreen(this.src)"/></div>
+    </div>
+
+    <div class="form-group">
+      <label>🔤 BOOSTA Violations (check all that apply)</label>
+      <div class="boosta-grid">
+        <label class="boosta-item">
+          <input type="checkbox" value="B" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">B</div><div class="boosta-text">Blocking — large item blocks smaller ones</div></div>
+        </label>
+        <label class="boosta-item">
+          <input type="checkbox" value="O1" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">O</div><div class="boosta-text">Over-stuffing — bin is overfull</div></div>
+        </label>
+        <label class="boosta-item">
+          <input type="checkbox" value="O2" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">O</div><div class="boosta-text">Overhanging — item hangs over bin edge</div></div>
+        </label>
+        <label class="boosta-item">
+          <input type="checkbox" value="S" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">S</div><div class="boosta-text">Same/Similar ASINs — in adjacent/same bin</div></div>
+        </label>
+        <label class="boosta-item">
+          <input type="checkbox" value="T" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">T</div><div class="boosta-text">Type of Bin — wrong bin type used</div></div>
+        </label>
+        <label class="boosta-item">
+          <input type="checkbox" value="A" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">A</div><div class="boosta-text">Above bin divider — item stowed too high</div></div>
+        </label>
+        <label class="boosta-item">
+          <input type="checkbox" value="OTHERS" onchange="toggleBoosta(this)"/>
+          <div><div class="boosta-letter">*</div><div class="boosta-text">OTHERS — Any other issue not listed above</div></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>📝 Description</label>
+      <textarea id="description" rows="4" placeholder="Describe the bin condition in detail..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>🚦 Urgency Level</label>
+      <div class="urgency-row">
+        <button class="urg-btn" data-u="1" onclick="setUrgency(1)">1<span class="urg-label">Minor</span></button>
+        <button class="urg-btn" data-u="2" onclick="setUrgency(2)">2<span class="urg-label">Moderate</span></button>
+        <button class="urg-btn" data-u="3" onclick="setUrgency(3)">3<span class="urg-label">Serious</span></button>
+        <button class="urg-btn" data-u="4" onclick="setUrgency(4)">4<span class="urg-label">Critical</span></button>
+      </div>
+    </div>
+
+    <button class="btn-submit" onclick="submitForm()">✅ Submit Bin Report</button>
+  </div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div class="view" id="view-dashboard">
+  <div class="stats-bar" id="stats-bar"></div>
+  
+  <div class="aging-bar" id="aging-bar"></div>
+
+  <!-- INTERACTIVE CHARTS SECTION -->
+  <div class="chart-card" style="max-width:680px; margin:0 auto 40px auto;">
+    <div class="chart-title" style="justify-content:center; font-size:1.2rem;">🔤 BOOSTA Violations Breakdown</div>
+    <div style="position:relative; height:300px; width:100%;">
+      <canvas id="boostaChart"></canvas>
+    </div>
+  </div>
+
+  <div class="dash-controls">
+    <span class="dash-title">📊 All Bin Reports</span>
+    <select id="sort-order" class="sort-select" onchange="applySort()">
+      <option value="desc">Newest First</option>
+      <option value="asc">Oldest First</option>
+    </select>
+    <select id="boosta-filter" class="sort-select" onchange="applySort()" style="border-color:var(--accent);">
+      <option value="all">🔤 All Violations</option>
+      <option value="B">Blocking (B)</option>
+      <option value="O1">Over-stuffing (O)</option>
+      <option value="O2">Overhanging (O)</option>
+      <option value="S">Same/Similar (S)</option>
+      <option value="T">Type of Bin (T)</option>
+      <option value="A">Above divider (A)</option>
+      <option value="OTHERS">Others (*)</option>
+    </select>
+    <input type="text" id="search-input" placeholder="🔍 Search Bin ID, Aisle, or Associate..." oninput="applySearch()" style="flex:1; min-width:250px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 16px; color:var(--text); font-family:'Inter',sans-serif;"/>
+    <button class="filter-btn active" onclick="filterDash('all',this)">All</button>
+    <button class="filter-btn" onclick="filterDash('1',this)" style="color:var(--u1)">🟡 1</button>
+    <button class="filter-btn" onclick="filterDash('2',this)" style="color:var(--u2)">🟠 2</button>
+    <button class="filter-btn" onclick="filterDash('3',this)" style="color:var(--u3)">🔴 3</button>
+    <button class="filter-btn" onclick="filterDash('4',this)" style="color:#ff9999">🆘 4</button>
+    <button class="filter-btn" onclick="filterDash('open',this)">Open</button>
+    <button class="filter-btn" onclick="filterDash('resolved',this)">Resolved</button>
+  </div>
+
+  <div class="bins-grid" id="bins-grid"></div>
+</div>
+
+<!-- HEATMAP VIEW -->
+<div class="view" id="view-heatmap">
+  <div class="dash-controls" style="justify-content: center; margin-bottom: 20px;">
+    <span class="dash-title">🗺️ Warehouse Aisle Heatmap</span>
+  </div>
+  <div class="heatmap-grid" id="heatmap-grid"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Configure Global Chart.js Themes for Dark Mode aesthetics
+Chart.defaults.color = 'hsl(215, 25%, 75%)';
+Chart.defaults.borderColor = 'hsl(222, 30%, 20%)';
+
+const BOOSTA_LABELS = {B:'Blocking',O1:'Over-stuffing',O2:'Overhanging',S:'Same/Similar',T:'Type of Bin',A:'Above divider',OTHERS:'Others'};
+const MANAGER_PIN = "8888"; // Pin for resolving
+const DELETE_PIN = "9999"; // Pin for deleting
+const URG_LABELS = ['','Minor','Moderate','Serious','Critical','Critical'];
+const URG_EMOJIS = ['','🟡','🟠','🔴','🆘','🆘'];
+let selectedUrgency = 1;
+let selectedBoosta = [];
+let currentFilter = 'all';
+let compressedImageBlob = null; // Variable to store our resized photo
+let currentBinsData = []; // Store fetched bins for local searching
+
+let boostaChartInstance = null;
+
+// Init
+setUrgency(1);
+
+// Drag & Drop
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      const MAX_DIMENSION = 1000;
+
+      if (width > height && width > MAX_DIMENSION) {
+        height *= MAX_DIMENSION / width;
+        width = MAX_DIMENSION;
+      } else if (height > MAX_DIMENSION) {
+        width *= MAX_DIMENSION / height;
+        height = MAX_DIMENSION;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(blob => {
+        compressedImageBlob = blob;
+        const compressedUrl = URL.createObjectURL(blob);
+        document.getElementById('preview-img').src = compressedUrl;
+        document.getElementById('preview-wrap').style.display = 'block';
+      }, 'image/jpeg', 0.7);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setUrgency(n) {
+  selectedUrgency = n;
+  document.querySelectorAll('.urg-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector(`.urg-btn[data-u="${n}"]`).classList.add('sel');
+}
+
+function toggleBoosta(cb) {
+  const v = cb.value;
+  if (cb.checked) { if (!selectedBoosta.includes(v)) selectedBoosta.push(v); }
+  else { selectedBoosta = selectedBoosta.filter(x => x !== v); }
+}
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  
+  try {
+    if (typeof event !== 'undefined' && event && event.currentTarget) {
+      event.currentTarget.classList.add('active');
+    } else {
+      const tabs = document.querySelectorAll('.nav-tab');
+      if (name === 'submit') tabs[0].classList.add('active');
+      if (name === 'dashboard') tabs[1].classList.add('active');
+      if (name === 'heatmap' && tabs[2]) tabs[2].classList.add('active');
+    }
+  } catch(e) {
+    const tabs = document.querySelectorAll('.nav-tab');
+    if (name === 'submit') tabs[0].classList.add('active');
+    if (name === 'dashboard') tabs[1].classList.add('active');
+    if (name === 'heatmap' && tabs[2]) tabs[2].classList.add('active');
+  }
+  
+  if (name === 'dashboard' || name === 'heatmap') { 
+    loadStats(); 
+    loadBins(); 
+  }
+}
+
+function toast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+async function submitForm() {
+  const fd = new FormData();
+  fd.append('bin_id', document.getElementById('bin_id').value.trim());
+  fd.append('aisle', document.getElementById('aisle').value.trim());
+  fd.append('reported_by', document.getElementById('reported_by').value.trim());
+  const description = document.getElementById('description').value.trim();
+  
+  if (selectedBoosta.includes('OTHERS') && !description) {
+    toast('⚠️ Please provide a description for the "OTHERS" violation.');
+    return;
+  }
+
+  fd.append('description', description);
+  fd.append('urgency', selectedUrgency);
+  fd.append('boosta_categories', JSON.stringify(selectedBoosta));
+  
+  if (compressedImageBlob) {
+    fd.append('image', compressedImageBlob, 'photo.jpg');
+  }
+
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = '⏳ Submitting...';
+  btn.disabled = true;
+
+  try {
+    if (window.location.protocol === 'file:') {
+      toast('⚠️ Error: You are opening this as a file. Please use http://localhost:5000');
+      btn.textContent = '✅ Submit Bin Report';
+      btn.disabled = false;
+      return;
+    }
+
+    const res = await fetch('/api/submit', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    
+    const data = await res.json();
+    if (data.success) {
+      toast('✅ Bin report submitted!');
+      resetForm();
+    } else {
+      toast('❌ Error: ' + (data.error || 'Unknown'));
+    }
+  } catch (e) {
+    console.error('Submission error:', e);
+    toast('❌ Server error. Is the server running at ' + window.location.origin + '?');
+  } finally {
+    btn.textContent = '✅ Submit Bin Report';
+    btn.disabled = false;
+  }
+}
+
+function resetForm() {
+  document.getElementById('bin_id').value = '';
+  document.getElementById('aisle').value = '';
+  document.getElementById('reported_by').value = '';
+  document.getElementById('description').value = '';
+  document.getElementById('image-input').value = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  compressedImageBlob = null;
+  document.querySelectorAll('.boosta-grid input').forEach(cb => { cb.checked = false; });
+  selectedBoosta = [];
+  setUrgency(1);
+}
+
+async function loadStats() {
+  try {
+    if (window.location.protocol === 'file:') return;
+    const res = await fetch('/api/stats');
+    if (!res.ok) return;
+    const d = await res.json();
+    const colors = ['','var(--u1)','var(--u2)','var(--u3)','#ff9999','#ff9999'];
+    document.getElementById('stats-bar').innerHTML = `
+      <div class="stats-row top-row">
+        <div class="stat-card"><div class="stat-num">${d.total}</div><div class="stat-label">Total Reports</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--u1)">${d.open}</div><div class="stat-label">Open</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--muted)">${d.resolved}</div><div class="stat-label">Resolved</div></div>
+      </div>
+      <div class="stats-row bottom-row">
+        ${[1,2,3,4].map(u=>`<div class="stat-card"><div class="stat-num" style="color:${colors[u]}">${(d.urgency_counts[u]||0) + (u===4 ? (d.urgency_counts[5]||0) : 0)}</div><div class="stat-label">${URG_EMOJIS[u]} Urgency ${u}</div></div>`).join('')}
+      </div>
+    `;
+  } catch(e) {
+    console.error('Stats load error:', e);
+  }
+}
+
+async function loadBins(urgency='') {
+  const grid = document.getElementById('bins-grid');
+  grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div>Loading...</div></div>';
+  let url = '/api/bins';
+  if (urgency && urgency !== 'all' && urgency !== 'open' && urgency !== 'resolved') url += '?urgency=' + urgency;
+  try {
+    if (window.location.protocol === 'file:') {
+       grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📂</div><div>Accessing via file://. Please use <b>http://localhost:5000</b></div></div>';
+       return;
+    }
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const d = await res.json();
+    let bins = d.bins;
+    if (urgency === 'open') bins = bins.filter(b => b.status === 'open');
+    if (urgency === 'resolved') bins = bins.filter(b => b.status === 'resolved');
+    
+    currentBinsData = bins;
+    renderBins();
+    renderHeatmap();
+  } catch(e) {
+ 
+    console.error('Bins load error:', e);
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div>Could not load data. Is the server running?</div></div>'; 
+  }
+}
+
+function applySearch() {
+  renderBins();
+}
+
+function applySort() {
+  renderBins();
+}
+
+function renderCharts(filteredBins) {
+  try {
+    if (typeof Chart === 'undefined') return;
+
+    // Calculate BOOSTA Category Breakdown
+    const boostaCounts = { B:0, O1:0, O2:0, S:0, T:0, A:0, OTHERS:0 };
+    filteredBins.forEach(b => {
+      const cats = b.boosta_categories || [];
+      if (!cats.length) return;
+      cats.forEach(c => {
+        if (boostaCounts[c] !== undefined) boostaCounts[c]++;
+        else boostaCounts.OTHERS++;
+      });
+    });
+
+    const boostaLabels = ['Blocking (B)', 'Over-stuffing (O)', 'Overhanging (O)', 'Same/Similar (S)', 'Type of Bin (T)', 'Above divider (A)', 'Others'];
+    const boostaData = [boostaCounts.B, boostaCounts.O1, boostaCounts.O2, boostaCounts.S, boostaCounts.T, boostaCounts.A, boostaCounts.OTHERS];
+    const boostaColors = ['#f59e0b', '#ec4899', '#f43f5e', '#3b82f6', '#10b981', '#8b5cf6', '#6b7280'];
+
+    // Update BOOSTA Doughnut Chart
+    const ctxBoosta = document.getElementById('boostaChart').getContext('2d');
+    if (boostaChartInstance) {
+      boostaChartInstance.data.datasets[0].data = boostaData;
+      boostaChartInstance.update();
+    } else {
+      boostaChartInstance = new Chart(ctxBoosta, {
+        type: 'doughnut',
+        data: {
+          labels: boostaLabels,
+          datasets: [{
+            data: boostaData,
+            backgroundColor: boostaColors,
+            borderWidth: 2,
+            borderColor: 'hsl(222, 47%, 15%)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'right', 
+              labels: { 
+                boxWidth: 20, 
+                padding: 16,
+                font: { size: 14, weight: 'bold' },
+                color: 'hsl(214, 32%, 96%)'
+              } 
+            }
+          }
+        }
+      });
+    }
+  } catch(e) {
+    console.error("Chart Rendering Error:", e);
+  }
+}
+
+function renderBins() {
+  const grid = document.getElementById('bins-grid');
+  const term = document.getElementById('search-input').value.toLowerCase().trim();
+  const sortOrder = document.getElementById('sort-order').value;
+  const boostaCat = document.getElementById('boosta-filter') ? document.getElementById('boosta-filter').value : 'all';
+  
+  let filtered = [...currentBinsData];
+
+  // 1. Search Filter
+  if (term) {
+    filtered = filtered.filter(b => {
+      const idStr = b.bin_id ? b.bin_id.toLowerCase() : '';
+      const aisleStr = b.aisle ? b.aisle.toLowerCase() : '';
+      const repStr = b.reported_by ? b.reported_by.toLowerCase() : '';
+      return idStr.includes(term) || aisleStr.includes(term) || repStr.includes(term);
+    });
+  }
+
+  // 2. BOOSTA Category Filter
+  if (boostaCat && boostaCat !== 'all') {
+    filtered = filtered.filter(b => {
+      const cats = b.boosta_categories || [];
+      return cats.includes(boostaCat);
+    });
+  }
+
+  // Render Charts dynamically based on currently viewed list!
+  renderCharts(filtered);
+
+  function parseUTC(ts) {
+    if (!ts.endsWith('Z') && !ts.includes('+')) return new Date(ts + 'Z');
+    return new Date(ts);
+  }
+
+  // 2. Time Sorting
+  filtered.sort((a, b) => {
+    const timeA = parseUTC(a.timestamp).getTime();
+    const timeB = parseUTC(b.timestamp).getTime();
+    return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+  });
+
+  // 3. Aging Summary Calculation
+  const now = Date.now();
+  const aging = { h0: 0, h3: 0, h6: 0, h12: 0, h24: 0 };
+  
+  currentBinsData.forEach(b => {
+    if (b.status === 'resolved') return;
+    const diffHours = (now - parseUTC(b.timestamp).getTime()) / (1000 * 60 * 60);
+    if (diffHours >= 24) aging.h24++;
+    else if (diffHours >= 12) aging.h12++;
+    else if (diffHours >= 6) aging.h6++;
+    else if (diffHours >= 3) aging.h3++;
+    else aging.h0++;
+  });
+
+  const agingBar = document.getElementById('aging-bar');
+  if (aging.h0 + aging.h3 + aging.h6 + aging.h12 + aging.h24 > 0) {
+    agingBar.innerHTML = `
+      ${aging.h24 ? `<div class="age-badge age-24h">🆘 ${aging.h24} Overdue (>24hr)</div>` : ''}
+      ${aging.h12 ? `<div class="age-badge age-12h">🚨 ${aging.h12} Serious (>12hr)</div>` : ''}
+      ${aging.h6 ? `<div class="age-badge age-6h">🕒 ${aging.h6} Warning (>6hr)</div>` : ''}
+      ${aging.h3 ? `<div class="age-badge age-3h">⌛ ${aging.h3} Pending (>3hr)</div>` : ''}
+      ${aging.h0 ? `<div class="age-badge age-0h">✅ ${aging.h0} Recent (<3hr)</div>` : ''}
+    `;
+  } else {
+    agingBar.innerHTML = `<div class="age-badge" style="border-color:var(--muted); color:var(--muted); opacity:0.5">No pending issues</div>`;
+  }
+
+  if (!filtered.length) { 
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div>No reports found</div></div>'; 
+    return; 
+  }
+  grid.innerHTML = filtered.map(b => binCard(b)).join('');
+}
+
+function timeAgo(date) {
+  let d = date;
+  if (!d.endsWith('Z') && !d.includes('+')) d = d + 'Z';
+  const seconds = Math.floor((new Date() - new Date(d)) / 1000);
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes + 'm ago';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + 'h ago';
+  return Math.floor(hours / 24) + 'd ago';
+}
+
+function binCard(b) {
+  const u = b.urgency;
+  const imgHtml = b.image_url
+    ? `<div class="bin-img" onclick="openFullScreen('${b.image_url}')" style="cursor: zoom-in;"><img src="${b.image_url}" alt="bin"/></div>`
+    : `<div class="bin-img" style="height:80px;font-size:2rem">📦</div>`;
+  const tags = (b.boosta_categories||[]).map(c=>`<span class="b-tag">${c}: ${BOOSTA_LABELS[c]||c}</span>`).join('');
+  const ts = timeAgo(b.timestamp);
+  const resolved = b.status === 'resolved';
+  return `<div class="bin-card${resolved?' resolved-tag':''}">
+    ${imgHtml}
+    <div class="bin-body">
+      <div class="bin-header">
+        <span class="bin-id">${b.bin_id||'(No ID)'} ${b.aisle?'· '+b.aisle:''}</span>
+        <span class="urg-badge u${u}">${URG_EMOJIS[u]} ${u} – ${URG_LABELS[u]}</span>
+      </div>
+      <div class="bin-desc">${b.description||'No description'}</div>
+      ${tags?`<div class="boosta-tags">${tags}</div>`:''}
+      <div class="bin-meta">
+        <span>👤 ${b.reported_by||'Unknown'}</span>
+        <span>🕐 ${ts}</span>
+      </div>
+      <div class="bin-actions">
+        <button class="btn-sm btn-resolve" onclick="resolveRecord('${b.id}')">${resolved?'🔓 Reopen':'✅ Resolve'}</button>
+        <button class="btn-sm btn-delete" onclick="deleteRecord('${b.id}')">🗑️ Delete</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function filterDash(val, btn) {
+  currentFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadBins(val);
+}
+
+async function resolveRecord(id) {
+  const pin = prompt('🔐 Manager Authorization Required\nPlease enter PIN to resolve/reopen this issue:');
+  if (pin === null) return;
+  
+  if (pin !== MANAGER_PIN) {
+    toast('❌ Invalid PIN. Access denied.');
+    return;
+  }
+
+  await fetch('/api/bins/' + id + '/resolve', { method: 'PATCH' });
+  toast('✅ Status updated');
+  loadBins(currentFilter);
+  loadStats();
+}
+
+async function deleteRecord(id) {
+  const pin = prompt('🚨 SECURITY ALERT\nEnter PIN to permanently DELETE this report:');
+  if (pin === null) return;
+  
+  if (pin !== DELETE_PIN) {
+    toast('❌ Invalid PIN. Delete cancelled.');
+    return;
+  }
+
+  if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  await fetch('/api/bins/' + id, { method: 'DELETE' });
+  toast('🗑️ Report deleted');
+  loadBins(currentFilter);
+  loadStats();
+  renderHeatmap();
+}
+
+function renderHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  if (!grid) return;
+
+  const aisleStats = {};
+  currentBinsData.forEach(b => {
+    if (b.status === 'resolved') return;
+    const aisle = (b.aisle || 'Unknown').trim();
+    if (!aisleStats[aisle]) {
+      aisleStats[aisle] = { count: 0, maxUrgency: 0 };
+    }
+    aisleStats[aisle].count++;
+    aisleStats[aisle].maxUrgency = Math.max(aisleStats[aisle].maxUrgency, b.urgency || 1);
+  });
+
+  const aisles = Object.keys(aisleStats).sort();
+
+  if (aisles.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📍</div><div>No active violations to map. Warehouse is clear!</div></div>';
+    return;
+  }
+
+  grid.innerHTML = aisles.map(name => {
+    const stat = aisleStats[name];
+    let heatClass = 'heat-low';
+    if (stat.count >= 5 || stat.maxUrgency >= 4) heatClass = 'heat-critical';
+    else if (stat.count >= 3 || stat.maxUrgency >= 3) heatClass = 'heat-high';
+    else if (stat.count >= 2 || stat.maxUrgency >= 2) heatClass = 'heat-mid';
+
+    return `
+      <div class="aisle-card" onclick="filterByAisle('${name}')">
+        <div class="aisle-name">${name}</div>
+        <div class="aisle-count">${stat.count} Open Issue${stat.count > 1 ? 's' : ''}</div>
+        <div class="heat-level ${heatClass}"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterByAisle(aisleName) {
+  showView('dashboard');
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.value = aisleName;
+    applySearch();
+  }
+  toast(`🔍 Filtering dashboard for ${aisleName}`);
+}
+
+function openFullScreen(url) {
+  if (!url) return;
+  const overlay = document.getElementById('image-overlay');
+  const img = document.getElementById('overlay-img');
+  img.src = url;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+function closeFullScreen() {
+  const overlay = document.getElementById('image-overlay');
+  overlay.style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+// SMART AUTO-FILL FOR AISLES
+function autoFillAisle(val) {
+  if (!val) return;
+  const match = val.match(/\d{3}/);
+  if (match) {
+    const aisleInput = document.getElementById('aisle');
+    if (!aisleInput.value) {
+      aisleInput.value = match[0];
+      toast('🤖 Aisle auto-detected: ' + match[0]);
+    }
+  }
+}
+
+// Add live listener for manual typing as well
+document.getElementById('bin_id').addEventListener('input', (e) => {
+  autoFillAisle(e.target.value);
+});
+</script>
+
+<!-- FULL SCREEN OVERLAY -->
+<div id="image-overlay" class="image-overlay" onclick="closeFullScreen()">
+  <span class="close-overlay">&times;</span>
+  <img id="overlay-img" src="" alt="Full Screen Preview">
+</div>
+
+</body>
+</html>
