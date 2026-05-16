@@ -20,6 +20,41 @@
   --accent-glow: hsla(38, 100%, 50%, 0.15);
   --accent2: hsl(24, 100%, 50%);
   --u1: hsl(84, 81%, 44%);
+
+  /* Confidential Footer Styles */
+  .confidential-footer {
+    width: 100%;
+    padding: 2rem 1rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    text-align: center;
+    color: hsl(222, 20%, 60%);
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .confidential-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: hsla(0, 100%, 50%, 0.1);
+    color: hsl(0, 100%, 70%);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    border: 1px solid hsla(0, 100%, 50%, 0.2);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .confidential-text {
+    max-width: 500px;
+    line-height: 1.5;
+    opacity: 0.8;
+  }
   --u2: hsl(38, 92%, 50%);
   --u3: hsl(0, 84%, 60%);
   --u4: hsl(0, 72%, 30%);
@@ -1584,6 +1619,23 @@ document.getElementById('bin_id').addEventListener('input', (e) => {
   <span class="close-overlay">&times;</span>
   <img id="overlay-img" src="" alt="Full Screen Preview">
 </div>
+
+<!-- OFFICIAL CONFIDENTIAL FOOTER -->
+<footer class="confidential-footer">
+  <div class="confidential-badge">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    Internal Use Only
+  </div>
+  <div class="confidential-text">
+    <strong>CONFIDENTIAL - AMAZON FC PROTOTYPE</strong><br>
+    This is an internal prototype tool developed for BOOSTA Bin Classification. 
+    Access is restricted to authorized Amazon fulfillment associates only. 
+    Unauthorized distribution or access is prohibited.
+  </div>
+  <div style="margin-top: 0.5rem; opacity: 0.4; font-size: 0.7rem;">
+    Powered by BOOSTA AWS Cloud v2.0
+  </div>
+</footer>
 
 </body>
 </html>
