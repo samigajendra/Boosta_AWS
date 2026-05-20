@@ -926,15 +926,23 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
         <input type="text" id="aisle" placeholder="e.g. Aisle 5"/>
       </div>
     </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+      <button type="button" id="manual-entry-btn" onclick="toggleManualEntry()" style="background: var(--surface); color: var(--muted); border: 1px dashed var(--border); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: var(--transition);">
+        ✏️ Manual Entry (Barcode not readable?)
+      </button>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
       <div class="form-group" style="margin-bottom: 0;">
         <label>🏢 Floor</label>
-        <input type="text" id="floor" placeholder="Auto-filled from Bin ID" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
+        <input type="text" id="floor" placeholder="Auto-filled" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
       </div>
       <div class="form-group" style="margin-bottom: 0;">
         <label>📦 Mod</label>
-        <input type="text" id="mod" placeholder="Auto-filled from Bin ID" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
+        <input type="text" id="mod" placeholder="Auto-filled" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>🗺️ Aisle</label>
+        <input type="text" id="aisle-manual" placeholder="Auto-filled" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
       </div>
     </div>
 
@@ -1250,14 +1258,17 @@ function stopScanner() {
   }
 }
 
-// Parse Bin ID → Floor & Mod
-// Format: P-{floor}-{mod}{rest}  e.g. P-1-P181C810 → floor=1, mod=P
+// Parse Bin ID → Floor & Mod & Aisle
+// Format: P-{floor}-{mod}{rest}  e.g. P-1-P181C810 → floor=1, mod=P, aisle=181
 function parseBinId(value) {
   const floorEl = document.getElementById('floor');
   const modEl   = document.getElementById('mod');
+  const aisleEl = document.getElementById('aisle');
+  const aisleManualEl = document.getElementById('aisle-manual');
   if (!value || !value.trim()) {
     if (floorEl) floorEl.value = '';
     if (modEl)   modEl.value   = '';
+    if (aisleManualEl) aisleManualEl.value = '';
     return;
   }
   const parts = value.trim().split('-');
@@ -1265,6 +1276,50 @@ function parseBinId(value) {
   if (floorEl) floorEl.value = parts.length >= 2 ? parts[1] : '';
   // Mod: first character of the third segment (index 2)
   if (modEl)   modEl.value   = parts.length >= 3 ? parts[2].charAt(0) : '';
+  // Aisle: extract 3-digit number from the bin ID (e.g. P-1-P181C810 → 181)
+  const aisleMatch = value.match(/\d{3}/);
+  if (aisleMatch) {
+    if (aisleEl) aisleEl.value = aisleMatch[0];
+    if (aisleManualEl) aisleManualEl.value = aisleMatch[0];
+  }
+}
+
+// Toggle Manual Entry for Floor, Mod, Aisle when barcode is unreadable
+let isManualMode = false;
+function toggleManualEntry() {
+  isManualMode = !isManualMode;
+  const fields = ['floor', 'mod', 'aisle-manual'];
+  const btn = document.getElementById('manual-entry-btn');
+  
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isManualMode) {
+      el.removeAttribute('readonly');
+      el.style.background = 'var(--surface)';
+      el.style.cursor = 'text';
+      el.style.borderColor = 'var(--accent)';
+      el.placeholder = id === 'floor' ? 'e.g. 1, 2, 3, 4' : id === 'mod' ? 'e.g. S, M, L, P, F, C, B, T, R, E' : 'e.g. 181';
+    } else {
+      el.setAttribute('readonly', true);
+      el.style.background = 'hsla(222,47%,10%,0.7)';
+      el.style.cursor = 'default';
+      el.style.borderColor = '';
+      el.placeholder = 'Auto-filled';
+    }
+  });
+
+  if (isManualMode) {
+    btn.innerHTML = '🔒 Lock Fields (Auto-fill mode)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+    toast('✏️ Manual entry enabled — type Floor, Mod & Aisle manually');
+  } else {
+    btn.innerHTML = '✏️ Manual Entry (Barcode not readable?)';
+    btn.style.borderColor = '';
+    btn.style.color = 'var(--muted)';
+    toast('🔒 Fields locked — auto-fill from Bin ID');
+  }
 }
 
 // Voice to Text Dictation
@@ -1433,7 +1488,9 @@ async function submitForm() {
   fd.append('bin_id', document.getElementById('bin_id').value.trim());
   fd.append('floor', document.getElementById('floor').value.trim());
   fd.append('mod', document.getElementById('mod').value.trim());
-  fd.append('aisle', document.getElementById('aisle').value.trim());
+  // Use aisle from main field, or fall back to the manual aisle field
+  const aisleVal = document.getElementById('aisle').value.trim() || document.getElementById('aisle-manual').value.trim();
+  fd.append('aisle', aisleVal);
   fd.append('reported_by', document.getElementById('reported_by').value.trim());
   fd.append('last_touch', document.getElementById('last_touch').value.trim());
   const description = document.getElementById('description').value.trim();
