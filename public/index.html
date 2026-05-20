@@ -438,7 +438,7 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
 
 .toast.show { transform: translateY(0); opacity: 1; }
 
-/* DASHBOARD */
+/* DASHBOARD TOOLBAR */
 .dash-controls {
   display: flex;
   gap: 16px;
@@ -451,24 +451,98 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
   border: 1px solid var(--border);
 }
 
+.dash-controls.main-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.toolbar-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.toolbar-header .search-wrapper {
+  flex: 1;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.toolbar-header #search-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-group {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.group-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 8px;
+}
+
 .dash-title { font-size: 1.5rem; font-weight: 800; }
 
 .filter-btn {
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
   color: var(--muted);
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.85rem;
-  transition: var(--transition);
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.filter-btn.active, .filter-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--card);
+.filter-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: #000;
 }
 
 .bins-grid {
@@ -595,12 +669,16 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
 .empty-icon { font-size: 5rem; margin-bottom: 24px; opacity: 0.5; }
 
 /* AGING BADGES */
-.aging-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-.age-badge { padding: 10px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.aging-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; transition: all 0.3s ease; justify-content: center; }
+.age-badge { padding: 10px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s ease; user-select: none; }
+.age-badge:hover { transform: translateY(-2px); filter: brightness(1.2); }
+.age-badge.active-filter { box-shadow: 0 0 14px currentColor; border-width: 2px; transform: translateY(-2px); }
+.aging-bar.has-active .age-badge:not(.active-filter) { opacity: 0.35; }
 .age-3h { border-color: #fbbf24; color: #fbbf24; background: rgba(251, 191, 36, 0.05); }
 .age-6h { border-color: #f97316; color: #f97316; background: rgba(249, 115, 22, 0.05); }
 .age-12h { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.05); }
 .age-24h { border-color: #991b1b; background: rgba(153, 27, 27, 0.2); color: #fca5a5; animation: pulse 2s infinite; }
+.age-24h.active-filter { animation: pulse 1s infinite; }
 .age-0h { border-color: var(--u1); color: var(--u1); background: rgba(34, 197, 94, 0.05); }
 @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
@@ -746,6 +824,69 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
   /* Modal Adjustments */
   #resolve-modal-overlay > div { padding: 20px !important; width: 95% !important; }
 }
+
+/* SHIFT ACTIVITY HEATMAP STYLES */
+.heatmap-matrix-wrapper {
+  display: grid;
+  grid-template-columns: auto repeat(24, 1fr);
+  gap: 6px;
+  min-width: 720px;
+  padding: 4px;
+}
+
+.heatmap-day-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  height: 28px;
+}
+
+.heatmap-hour-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.heatmap-cell {
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  box-shadow: 0 0 12px var(--accent-glow);
+  border-color: var(--accent);
+}
+
+.heatmap-cell.level-0 { background: rgba(255, 255, 255, 0.03); }
+.heatmap-cell.level-1 { background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.3); }
+.heatmap-cell.level-2 { background: rgba(251, 191, 36, 0.4); border-color: rgba(251, 191, 36, 0.6); }
+.heatmap-cell.level-3 { background: rgba(249, 115, 22, 0.7); border-color: rgba(249, 115, 22, 0.9); }
+.heatmap-cell.level-4 { background: rgba(239, 68, 68, 0.95); border-color: rgba(239, 68, 68, 1); }
+
+.legend-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.legend-cell.level-0 { background: rgba(255, 255, 255, 0.03); }
+.legend-cell.level-1 { background: rgba(251, 191, 36, 0.15); }
+.legend-cell.level-2 { background: rgba(251, 191, 36, 0.4); }
+.legend-cell.level-3 { background: rgba(249, 115, 22, 0.7); }
+.legend-cell.level-4 { background: rgba(239, 68, 68, 0.95); }
 </style>
 </head>
 <body>
@@ -770,9 +911,9 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
 
     <div class="row2">
       <div class="form-group">
-        <label>Bin ID (optional)</label>
+        <label>Bin ID</label>
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="bin_id" placeholder="e.g. A-12-3" style="flex: 1;"/>
+          <input type="text" id="bin_id" placeholder="e.g. P-1-P181C810" style="flex: 1;" oninput="parseBinId(this.value)"/>
           <button type="button" id="scan-btn" onclick="startScanner()" style="padding: 0 16px; border-radius: 12px; background: var(--surface); border: 2px solid var(--border); color: var(--text); cursor: pointer; font-weight: 700; transition: var(--transition);">📷 Scan</button>
         </div>
         <div id="reader-container" style="display: none; margin-top: 10px; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; background: #000;">
@@ -786,9 +927,26 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
       </div>
     </div>
 
-    <div class="form-group">
-      <label>Reported By</label>
-      <input type="text" id="reported_by" placeholder="Your name or associate ID"/>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>🏢 Floor</label>
+        <input type="text" id="floor" placeholder="Auto-filled from Bin ID" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>📦 Mod</label>
+        <input type="text" id="mod" placeholder="Auto-filled from Bin ID" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="form-group">
+        <label>Reported By</label>
+        <input type="text" id="reported_by" placeholder="Your name"/>
+      </div>
+      <div class="form-group">
+        <label>👤 Last Touch</label>
+        <input type="text" id="last_touch" placeholder="Associate ID who last stowed here"/>
+      </div>
     </div>
 
     <div class="form-group">
@@ -883,37 +1041,65 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
   <div class="boosta-counts-bar" id="boosta-counts-bar" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; justify-content:center;"></div>
 
   <!-- INTERACTIVE CHARTS SECTION -->
-  <div class="chart-card" style="max-width:680px; margin:0 auto 40px auto;">
-    <div class="chart-title" style="justify-content:center; font-size:1.2rem;">🔤 BOOSTA Violations Breakdown</div>
-    <div style="position:relative; height:300px; width:100%;">
-      <canvas id="boostaChart"></canvas>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title" style="justify-content:center; font-size:1.1rem;">🔤 BOOSTA Violations Breakdown</div>
+      <div style="position:relative; height:260px; width:100%;">
+        <canvas id="boostaChart"></canvas>
+      </div>
     </div>
+    
+
+
+    <div class="chart-card">
+      <div class="chart-title" style="justify-content:center; font-size:1.1rem;">📈 Operations Burnup Chart</div>
+      <div style="position:relative; height:260px; width:100%;">
+        <canvas id="burnupChart"></canvas>
+      </div>
+    </div>
+
   </div>
 
-  <div class="dash-controls">
-    <span class="dash-title">📊 All Bin Reports</span>
-    <select id="sort-order" class="sort-select" onchange="applySort()">
-      <option value="desc">Newest First</option>
-      <option value="asc">Oldest First</option>
-    </select>
-    <select id="boosta-filter" class="sort-select" onchange="applySort()" style="border-color:var(--accent);">
-      <option value="all">🔤 All Violations</option>
-      <option value="B">Blocking (B)</option>
-      <option value="O1">Over-stuffing (O)</option>
-      <option value="O2">Overhanging (O)</option>
-      <option value="S">Same/Similar (S)</option>
-      <option value="T">Type of Bin (T)</option>
-      <option value="A">Above divider (A)</option>
-      <option value="OTHERS">Others (*)</option>
-    </select>
-    <input type="text" id="search-input" placeholder="🔍 Search Bin ID, Aisle, or Associate..." oninput="applySearch()" style="flex:1; min-width:250px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 16px; color:var(--text); font-family:'Inter',sans-serif;"/>
-    <button class="filter-btn active" onclick="filterDash('all',this)">All</button>
-    <button class="filter-btn" onclick="filterDash('1',this)" style="color:var(--u1)">🟡 1</button>
-    <button class="filter-btn" onclick="filterDash('2',this)" style="color:var(--u2)">🟠 2</button>
-    <button class="filter-btn" onclick="filterDash('3',this)" style="color:var(--u3)">🔴 3</button>
-    <button class="filter-btn" onclick="filterDash('4',this)" style="color:#ff9999">🆘 4</button>
-    <button class="filter-btn" onclick="filterDash('open',this)">Open</button>
-    <button class="filter-btn" onclick="filterDash('resolved',this)">Resolved</button>
+  <div class="dash-controls main-controls">
+    <div class="toolbar-header">
+      <span class="dash-title">📊 All Bin Reports</span>
+      <div class="search-wrapper">
+        <input type="text" id="search-input" placeholder="🔍 Search Bin ID, Aisle, or Associate..." oninput="applySearch()"/>
+      </div>
+    </div>
+    <div class="toolbar-filters">
+      <div class="filter-group">
+        <select id="sort-order" class="sort-select" onchange="applySort()">
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+        </select>
+        <select id="boosta-filter" class="sort-select" onchange="applySort()" style="border-color:var(--accent);">
+          <option value="all">🔤 All Violations</option>
+          <option value="B">Blocking (B)</option>
+          <option value="O1">Over-stuffing (O)</option>
+          <option value="O2">Overhanging (O)</option>
+          <option value="S">Same/Similar (S)</option>
+          <option value="T">Type of Bin (T)</option>
+          <option value="A">Above divider (A)</option>
+          <option value="OTHERS">Others (*)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="btn-group">
+          <span class="group-label">Urgency</span>
+          <button class="filter-btn active" onclick="filterDash('all',this)">All</button>
+          <button class="filter-btn" onclick="filterDash('1',this)" style="color:var(--u1)">🟡 1</button>
+          <button class="filter-btn" onclick="filterDash('2',this)" style="color:var(--u2)">🟠 2</button>
+          <button class="filter-btn" onclick="filterDash('3',this)" style="color:var(--u3)">🔴 3</button>
+          <button class="filter-btn" onclick="filterDash('4',this)" style="color:#ff9999">🆘 4</button>
+        </div>
+        <div class="btn-group">
+          <span class="group-label">Status</span>
+          <button class="filter-btn" onclick="filterDash('open',this)">Open</button>
+          <button class="filter-btn" onclick="filterDash('resolved',this)">Resolved</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="bins-grid" id="bins-grid"></div>
@@ -929,8 +1115,28 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
 
 <!-- HEATMAP VIEW -->
 <div class="view" id="view-heatmap">
-  <div class="dash-controls" style="justify-content: center; margin-bottom: 20px;">
-    <span class="dash-title">🗺️ Warehouse Aisle Heatmap</span>
+  <div class="dash-controls" style="justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap;">
+    <span class="dash-title" style="margin-right: auto;">🗺️ Warehouse Aisle Heatmap</span>
+    <select id="heatmap-floor-filter" class="sort-select" onchange="renderHeatmap()" style="border-color: var(--accent);">
+      <option value="all">🏢 All Floors</option>
+      <option value="1">Floor 1</option>
+      <option value="2">Floor 2</option>
+      <option value="3">Floor 3</option>
+      <option value="4">Floor 4</option>
+    </select>
+    <select id="heatmap-mod-filter" class="sort-select" onchange="renderHeatmap()" style="border-color: var(--accent);">
+      <option value="all">📦 All Mods</option>
+      <option value="S">Mod S</option>
+      <option value="M">Mod M</option>
+      <option value="L">Mod L</option>
+      <option value="P">Mod P</option>
+      <option value="F">Mod F</option>
+      <option value="C">Mod C</option>
+      <option value="B">Mod B</option>
+      <option value="T">Mod T</option>
+      <option value="R">Mod R</option>
+      <option value="E">Mod E</option>
+    </select>
   </div>
   <div class="heatmap-grid" id="heatmap-grid"></div>
 </div>
@@ -963,10 +1169,35 @@ const URG_EMOJIS = ['','🟡','🟠','🔴','🆘','🆘'];
 let selectedUrgency = 1;
 let selectedBoosta = [];
 let currentFilter = 'all';
+let activeAgeFilter = 'all';
 let compressedImageBlob = null; // Variable to store our resized photo
 let currentBinsData = []; // Store fetched bins for local searching
 
+function filterByAge(val) {
+  if (activeAgeFilter === val) {
+    activeAgeFilter = 'all';
+    toast('🔓 Cleared age filter');
+  } else {
+    activeAgeFilter = val;
+    const label = val === '24h' ? 'Overdue (>24h)' : val === '12h' ? 'Serious (>12h)' : val === '6h' ? 'Warning (>6h)' : val === '3h' ? 'Pending (>3h)' : 'Recent (<3h)';
+    toast(`⏳ Filtering by age: ${label}`);
+  }
+  
+  if (currentFilter === 'resolved') {
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    const allBtn = document.querySelector('button[onclick*="all"]');
+    if (allBtn) allBtn.classList.add('active');
+    loadBins('all');
+  } else {
+    renderBins();
+  }
+}
+
 let boostaChartInstance = null;
+let trendChartInstance = null;
+let urgencyChartInstance = null;
+let burnupChartInstance = null;
 
 // Configure Global Chart.js Themes for Dark Mode aesthetics
 if (typeof Chart !== 'undefined') {
@@ -992,7 +1223,7 @@ function startScanner() {
     (decodedText, decodedResult) => {
       // success
       document.getElementById('bin_id').value = decodedText;
-      autoFillAisle(decodedText);
+      parseBinId(decodedText);
       stopScanner();
       toast('✅ Barcode scanned successfully!');
     },
@@ -1017,6 +1248,23 @@ function stopScanner() {
   } else {
     document.getElementById('reader-container').style.display = 'none';
   }
+}
+
+// Parse Bin ID → Floor & Mod
+// Format: P-{floor}-{mod}{rest}  e.g. P-1-P181C810 → floor=1, mod=P
+function parseBinId(value) {
+  const floorEl = document.getElementById('floor');
+  const modEl   = document.getElementById('mod');
+  if (!value || !value.trim()) {
+    if (floorEl) floorEl.value = '';
+    if (modEl)   modEl.value   = '';
+    return;
+  }
+  const parts = value.trim().split('-');
+  // Floor: second segment (index 1)
+  if (floorEl) floorEl.value = parts.length >= 2 ? parts[1] : '';
+  // Mod: first character of the third segment (index 2)
+  if (modEl)   modEl.value   = parts.length >= 3 ? parts[2].charAt(0) : '';
 }
 
 // Voice to Text Dictation
@@ -1183,8 +1431,11 @@ function toast(msg, dur=3000) {
 async function submitForm() {
   const fd = new FormData();
   fd.append('bin_id', document.getElementById('bin_id').value.trim());
+  fd.append('floor', document.getElementById('floor').value.trim());
+  fd.append('mod', document.getElementById('mod').value.trim());
   fd.append('aisle', document.getElementById('aisle').value.trim());
   fd.append('reported_by', document.getElementById('reported_by').value.trim());
+  fd.append('last_touch', document.getElementById('last_touch').value.trim());
   const description = document.getElementById('description').value.trim();
   
   // Validation for OTHERS
@@ -1241,8 +1492,11 @@ async function submitForm() {
 
 function resetForm() {
   document.getElementById('bin_id').value = '';
+  document.getElementById('floor').value = '';
+  document.getElementById('mod').value = '';
   document.getElementById('aisle').value = '';
   document.getElementById('reported_by').value = '';
+  document.getElementById('last_touch').value = '';
   document.getElementById('description').value = '';
   document.getElementById('image-input').value = '';
   if (document.getElementById('camera-input')) document.getElementById('camera-input').value = '';
@@ -1296,7 +1550,7 @@ async function loadBins(urgency='') {
     renderBins();
     renderResolvedBins();
     renderHeatmap();
-  } catch(e) { 
+  } catch(e) {
     console.error('Bins load error:', e);
     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div>Could not load data. Is the server running?</div></div>'; 
   }
@@ -1314,7 +1568,7 @@ function renderCharts(filteredBins) {
   try {
     if (typeof Chart === 'undefined') return;
 
-    // Calculate BOOSTA Category Breakdown
+    // 1. Calculate BOOSTA Category Breakdown
     const boostaCounts = { B:0, O1:0, O2:0, S:0, T:0, A:0, OTHERS:0 };
     filteredBins.forEach(b => {
       const cats = b.boosta_categories || [];
@@ -1353,9 +1607,9 @@ function renderCharts(filteredBins) {
             legend: { 
               position: 'right', 
               labels: { 
-                boxWidth: 20, 
-                padding: 16,
-                font: { size: 14, weight: 'bold' },
+                boxWidth: 12, 
+                padding: 10,
+                font: { size: 11, weight: 'bold' },
                 color: 'hsl(214, 32%, 96%)'
               } 
             }
@@ -1378,6 +1632,109 @@ function renderCharts(filteredBins) {
         if (boostaCounts.OTHERS > 0) badgHtml.push(`<div style="${bStyle} background-color: #6b7280; box-shadow: 0 0 10px rgba(107,114,128,0.4);">OTHERS: ${boostaCounts.OTHERS}</div>`);
         
         boostaBar.innerHTML = badgHtml.join('');
+    }
+
+    // 3.5. Calculate Burnup Chart Data
+    const datesSet = new Set();
+    filteredBins.forEach(b => {
+      if (b.timestamp) {
+        const reportDate = b.timestamp.includes('T') ? b.timestamp.split('T')[0] : b.timestamp.split(' ')[0];
+        if (reportDate) datesSet.add(reportDate);
+      }
+      if (b.status === 'resolved' && b.resolved_at) {
+        const resolveDate = b.resolved_at.includes('T') ? b.resolved_at.split('T')[0] : b.resolved_at.split(' ')[0];
+        if (resolveDate) datesSet.add(resolveDate);
+      }
+    });
+
+    const sortedBurnupDates = Array.from(datesSet).sort();
+    const cumulativeReported = [];
+    const cumulativeResolved = [];
+
+    sortedBurnupDates.forEach(dateStr => {
+      let reportedCount = 0;
+      let resolvedCount = 0;
+
+      filteredBins.forEach(b => {
+        if (b.timestamp) {
+          const reportDate = b.timestamp.includes('T') ? b.timestamp.split('T')[0] : b.timestamp.split(' ')[0];
+          if (reportDate && reportDate <= dateStr) {
+            reportedCount++;
+          }
+        }
+        if (b.status === 'resolved' && b.resolved_at) {
+          const resolveDate = b.resolved_at.includes('T') ? b.resolved_at.split('T')[0] : b.resolved_at.split(' ')[0];
+          if (resolveDate && resolveDate <= dateStr) {
+            resolvedCount++;
+          }
+        }
+      });
+
+      cumulativeReported.push(reportedCount);
+      cumulativeResolved.push(resolvedCount);
+    });
+
+    const burnupLabels = sortedBurnupDates.map(d => {
+      const parts = d.split('-');
+      return parts.length === 3 ? `${parts[1]}/${parts[2]}` : d;
+    });
+
+    // Update Burnup Chart
+    const ctxBurnup = document.getElementById('burnupChart').getContext('2d');
+    if (burnupChartInstance) {
+      burnupChartInstance.data.labels = burnupLabels;
+      burnupChartInstance.data.datasets[0].data = cumulativeReported;
+      burnupChartInstance.data.datasets[1].data = cumulativeResolved;
+      burnupChartInstance.update();
+    } else {
+      burnupChartInstance = new Chart(ctxBurnup, {
+        type: 'line',
+        data: {
+          labels: burnupLabels,
+          datasets: [
+            {
+              label: 'Total Reported',
+              data: cumulativeReported,
+              borderColor: 'hsl(38, 100%, 50%)',
+              backgroundColor: 'hsla(38, 100%, 50%, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: 'hsl(38, 100%, 50%)'
+            },
+            {
+              label: 'Total Resolved',
+              data: cumulativeResolved,
+              borderColor: 'hsl(142, 71%, 45%)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: 'hsl(142, 71%, 45%)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: 'hsl(214, 32%, 96%)', font: { weight: 'bold' } }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, color: 'hsl(215, 25%, 75%)' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            x: {
+              ticks: { color: 'hsl(215, 25%, 75%)' },
+              grid: { display: false }
+            }
+          }
+        }
+      });
     }
 
   } catch(e) {
@@ -1411,22 +1768,37 @@ function renderBins() {
     });
   }
 
-  // Render Charts dynamically based on currently viewed list!
-  renderCharts(filtered);
-
   function parseUTC(ts) {
     if (!ts.endsWith('Z') && !ts.includes('+')) return new Date(ts + 'Z');
     return new Date(ts);
   }
 
-  // 2. Time Sorting
+  // 2.5. Age Filter
+  if (activeAgeFilter && activeAgeFilter !== 'all') {
+    const now = Date.now();
+    filtered = filtered.filter(b => {
+      if (b.status === 'resolved') return false;
+      const diffHours = (now - parseUTC(b.timestamp).getTime()) / (1000 * 60 * 60);
+      if (activeAgeFilter === '24h') return diffHours >= 24;
+      if (activeAgeFilter === '12h') return diffHours >= 12 && diffHours < 24;
+      if (activeAgeFilter === '6h') return diffHours >= 6 && diffHours < 12;
+      if (activeAgeFilter === '3h') return diffHours >= 3 && diffHours < 6;
+      if (activeAgeFilter === '0h') return diffHours < 3;
+      return true;
+    });
+  }
+
+  // Render Charts dynamically based on currently viewed list!
+  renderCharts(filtered);
+
+  // 3. Time Sorting
   filtered.sort((a, b) => {
     const timeA = parseUTC(a.timestamp).getTime();
     const timeB = parseUTC(b.timestamp).getTime();
     return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
   });
 
-  // 3. Aging Summary Calculation (Only for Open issues)
+  // 4. Aging Summary Calculation (Only for Open issues)
   const now = Date.now();
   const aging = { h0: 0, h3: 0, h6: 0, h12: 0, h24: 0 };
   
@@ -1442,14 +1814,20 @@ function renderBins() {
 
   const agingBar = document.getElementById('aging-bar');
   if (aging.h0 + aging.h3 + aging.h6 + aging.h12 + aging.h24 > 0) {
+    if (activeAgeFilter && activeAgeFilter !== 'all') {
+      agingBar.classList.add('has-active');
+    } else {
+      agingBar.classList.remove('has-active');
+    }
     agingBar.innerHTML = `
-      ${aging.h24 ? `<div class="age-badge age-24h">🆘 ${aging.h24} Overdue (>24hr)</div>` : ''}
-      ${aging.h12 ? `<div class="age-badge age-12h">🚨 ${aging.h12} Serious (>12hr)</div>` : ''}
-      ${aging.h6 ? `<div class="age-badge age-6h">🕒 ${aging.h6} Warning (>6hr)</div>` : ''}
-      ${aging.h3 ? `<div class="age-badge age-3h">⌛ ${aging.h3} Pending (>3hr)</div>` : ''}
-      ${aging.h0 ? `<div class="age-badge age-0h">✅ ${aging.h0} Recent (<3hr)</div>` : ''}
+      ${aging.h24 ? `<div class="age-badge age-24h ${activeAgeFilter === '24h' ? 'active-filter' : ''}" onclick="filterByAge('24h')">🆘 ${aging.h24} Overdue (>24hr)</div>` : ''}
+      ${aging.h12 ? `<div class="age-badge age-12h ${activeAgeFilter === '12h' ? 'active-filter' : ''}" onclick="filterByAge('12h')">🚨 ${aging.h12} Serious (>12hr)</div>` : ''}
+      ${aging.h6 ? `<div class="age-badge age-6h ${activeAgeFilter === '6h' ? 'active-filter' : ''}" onclick="filterByAge('6h')">🕒 ${aging.h6} Warning (>6hr)</div>` : ''}
+      ${aging.h3 ? `<div class="age-badge age-3h ${activeAgeFilter === '3h' ? 'active-filter' : ''}" onclick="filterByAge('3h')">⌛ ${aging.h3} Pending (>3hr)</div>` : ''}
+      ${aging.h0 ? `<div class="age-badge age-0h ${activeAgeFilter === '0h' ? 'active-filter' : ''}" onclick="filterByAge('0h')">✅ ${aging.h0} Recent (<3hr)</div>` : ''}
     `;
   } else {
+    agingBar.classList.remove('has-active');
     agingBar.innerHTML = `<div class="age-badge" style="border-color:var(--muted); color:var(--muted); opacity:0.5">No pending issues</div>`;
   }
 
@@ -1480,6 +1858,16 @@ function binCard(b) {
   const tags = (b.boosta_categories||[]).map(c=>`<span class="b-tag">${c}: ${BOOSTA_LABELS[c]||c}</span>`).join('');
   const ts = timeAgo(b.timestamp);
   const resolved = b.status === 'resolved';
+
+  // Extract floor/mod from database values or fall back to parsing from bin_id dynamically
+  let displayFloor = b.floor;
+  let displayMod = b.mod;
+  if ((!displayFloor || !displayMod) && b.bin_id) {
+    const parts = b.bin_id.trim().split('-');
+    if (!displayFloor && parts.length >= 2) displayFloor = parts[1];
+    if (!displayMod && parts.length >= 3) displayMod = parts[2].charAt(0);
+  }
+
   return `<div class="bin-card${resolved?' resolved-tag':''}">
     ${imgHtml}
     <div class="bin-body">
@@ -1487,14 +1875,18 @@ function binCard(b) {
         <span class="bin-id">${b.bin_id||'(No ID)'} ${b.aisle?'· '+b.aisle:''}</span>
         <span class="urg-badge u${u}">${URG_EMOJIS[u]} ${u} – ${URG_LABELS[u]}</span>
       </div>
+      ${(displayFloor||displayMod)?`<div style="display:flex;gap:8px;margin-bottom:10px;">${displayFloor?`<span style="background:hsla(38,100%,50%,0.12);color:var(--accent);border:1px solid hsla(38,100%,50%,0.3);border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:800;">🏢 Floor ${displayFloor}</span>`:''} ${displayMod?`<span style="background:hsla(222,47%,25%,0.5);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:800;">📦 Mod ${displayMod}</span>`:''}</div>`:''}
       <div class="bin-desc">${b.description||'No description'}</div>
       ${tags?`<div class="boosta-tags">${tags}</div>`:''}
       <div class="bin-meta" style="flex-direction: column; gap: 4px;">
         <div style="display:flex; justify-content:space-between;">
-          <span>👤 ${b.reported_by||'Unknown'}</span>
+          <span>👤 By: ${b.reported_by||'Unknown'}</span>
+          <span>Last Touch: ${b.last_touch||'N/A'}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2px;">
           <span>🕐 ${ts}</span>
         </div>
-        ${resolved && b.resolved_by ? `<div style="color:var(--u1); font-weight:700;">✅ Resolved by: ${b.resolved_by}</div>` : ''}
+        ${resolved && b.resolved_by ? `<div style="color:var(--u1); font-weight:700; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2px;">✅ Resolved by: ${b.resolved_by}</div>` : ''}
       </div>
       <div class="bin-actions">
         <button class="btn-sm btn-resolve" onclick="resolveRecord('${b.id}', '${b.status}')">${resolved?'🔓 Reopen':'✅ Resolve'}</button>
@@ -1536,9 +1928,22 @@ function resolvedCard(b) {
       </div>
     </div>
     <div class="bin-body" style="padding: 20px;">
-      <div style="font-weight: 800; font-size: 1.1rem; color: #fff; margin-bottom: 12px;">${b.bin_id||'(No ID)'} ${b.aisle?'· '+b.aisle:''}</div>
+      <div style="font-weight: 800; font-size: 1.1rem; color: #fff; margin-bottom: 8px;">${b.bin_id||'(No ID)'} ${b.aisle?'· '+b.aisle:''}</div>
+      
+      ${(() => {
+        // Extract floor/mod from database values or fall back to parsing from bin_id dynamically
+        let displayFloor = b.floor;
+        let displayMod = b.mod;
+        if ((!displayFloor || !displayMod) && b.bin_id) {
+          const parts = b.bin_id.trim().split('-');
+          if (!displayFloor && parts.length >= 2) displayFloor = parts[1];
+          if (!displayMod && parts.length >= 3) displayMod = parts[2].charAt(0);
+        }
+        return (displayFloor||displayMod)?`<div style="display:flex;gap:8px;margin-bottom:10px;">${displayFloor?`<span style="background:hsla(38,100%,50%,0.12);color:var(--accent);border:1px solid hsla(38,100%,50%,0.3);border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:800;">🏢 Floor ${displayFloor}</span>`:''} ${displayMod?`<span style="background:hsla(222,47%,25%,0.5);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:800;">📦 Mod ${displayMod}</span>`:''}</div>`:'';
+      })()}
       <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 8px;">
         <div><b>Reported By:</b> ${b.reported_by || 'Unknown'}</div>
+        <div><b>Last Touch:</b> ${b.last_touch || 'N/A'}</div>
         <div style="color: var(--u1); margin-top: 4px;"><b>Resolved By:</b> ${b.resolved_by || 'Manager'}</div>
       </div>
       <div style="font-size: 0.75rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px;">
@@ -1564,6 +1969,7 @@ function renderResolvedBins() {
 
 function filterDash(val, btn) {
   currentFilter = val;
+  activeAgeFilter = 'all';
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadBins(val);
@@ -1709,13 +2115,30 @@ async function deleteRecord(id) {
   renderHeatmap();
 }
 
+
 function renderHeatmap() {
   const grid = document.getElementById('heatmap-grid');
   if (!grid) return;
 
+  const floorFilter = document.getElementById('heatmap-floor-filter')?.value || 'all';
+  const modFilter = document.getElementById('heatmap-mod-filter')?.value || 'all';
+
   const aisleStats = {};
   currentBinsData.forEach(b => {
     if (b.status === 'resolved') return;
+    
+    // Extract floor/mod from database values or fall back to parsing from bin_id dynamically
+    let floorVal = b.floor;
+    let modVal = b.mod;
+    if ((!floorVal || !modVal) && b.bin_id) {
+      const parts = b.bin_id.trim().split('-');
+      if (!floorVal && parts.length >= 2) floorVal = parts[1];
+      if (!modVal && parts.length >= 3) modVal = parts[2].charAt(0);
+    }
+
+    if (floorFilter !== 'all' && floorVal !== floorFilter) return;
+    if (modFilter !== 'all' && modVal !== modFilter) return;
+
     const aisle = (b.aisle || 'Unknown').trim();
     if (!aisleStats[aisle]) {
       aisleStats[aisle] = { count: 0, maxUrgency: 0 };
@@ -1727,7 +2150,7 @@ function renderHeatmap() {
   const aisles = Object.keys(aisleStats).sort();
 
   if (aisles.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📍</div><div>No active violations to map. Warehouse is clear!</div></div>';
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📍</div><div>No active violations match the selected filters.</div></div>';
     return;
   }
 
