@@ -912,7 +912,7 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
     <div class="form-group" style="margin-bottom: 24px;">
       <label>Bin ID</label>
       <div style="display: flex; gap: 8px;">
-        <input type="text" id="bin_id" placeholder="e.g. P-1-P181C810" style="flex: 1;" oninput="parseBinId(this.value)"/>
+        <input type="text" id="bin_id" placeholder="e.g. P-1-P181C810" style="flex: 1;" oninput="formatBinInput(this, event)"/>
         <button type="button" id="scan-btn" onclick="startScanner()" style="padding: 0 16px; border-radius: 12px; background: var(--surface); border: 2px solid var(--border); color: var(--text); cursor: pointer; font-weight: 700; transition: var(--transition);">📷 Scan</button>
       </div>
       <div id="reader-container" style="display: none; margin-top: 10px; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; background: #000;">
@@ -1078,7 +1078,7 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
     <div class="toolbar-header">
       <span class="dash-title">📊 All Bin Reports</span>
       <div class="search-wrapper">
-        <input type="text" id="search-input" placeholder="🔍 Search Bin ID, Aisle, or Associate..." oninput="applySearch()"/>
+        <input type="text" id="search-input" placeholder="🔍 Search Bin ID, Aisle, Floor, Mod, or Associate..." oninput="applySearch()"/>
       </div>
     </div>
     <div class="toolbar-filters">
@@ -1283,6 +1283,42 @@ function parseBinId(value) {
   const aisleMatch = value.match(/\d{3}/);
   if (aisleMatch && aisleEl) {
     aisleEl.value = aisleMatch[0];
+  }
+}
+
+function formatBinInput(inputEl, event) {
+  const val = inputEl.value;
+  const prevVal = inputEl._prevVal || '';
+  inputEl._prevVal = val;
+  
+  // If deleting, skip formatting to let backspace work
+  const isDelete = (event && event.inputType && event.inputType.startsWith('delete')) || (val.length < prevVal.length);
+  if (isDelete) {
+    parseBinId(val);
+    return;
+  }
+  
+  let formatted = val.toUpperCase();
+  
+  // Letter zone prefix: if user types a single letter, append "-"
+  if (/^[A-Z]$/.test(formatted)) {
+    formatted = formatted + '-';
+  } 
+  // If user typed e.g. "P1" or "Q1" (letter + character, no dash), convert to "P-1-"
+  else if (/^[A-Z][0-9A-Z]$/.test(formatted)) {
+    formatted = formatted[0] + '-' + formatted[1] + '-';
+  } 
+  // If user typed e.g. "P-1" or "Q-3" (letter + dash + character), append "-"
+  else if (/^[A-Z]-[0-9A-Z]$/.test(formatted)) {
+    formatted = formatted + '-';
+  }
+  
+  inputEl.value = formatted;
+  inputEl._prevVal = formatted;
+  
+  parseBinId(formatted);
+  if (typeof autoFillAisle === 'function') {
+    autoFillAisle(formatted);
   }
 }
 
@@ -1704,8 +1740,8 @@ function renderCharts(filteredBins) {
     });
 
     const sortedBurnupDates = Array.from(datesSet).sort();
-    const cumulativeReported = [];
-    const cumulativeResolved = [];
+    const dailyReported = [];
+    const dailyResolved = [];
 
     sortedBurnupDates.forEach(dateStr => {
       let reportedCount = 0;
@@ -1714,20 +1750,20 @@ function renderCharts(filteredBins) {
       filteredBins.forEach(b => {
         if (b.timestamp) {
           const reportDate = b.timestamp.includes('T') ? b.timestamp.split('T')[0] : b.timestamp.split(' ')[0];
-          if (reportDate && reportDate <= dateStr) {
+          if (reportDate && reportDate === dateStr) {
             reportedCount++;
           }
         }
         if (b.status === 'resolved' && b.resolved_at) {
           const resolveDate = b.resolved_at.includes('T') ? b.resolved_at.split('T')[0] : b.resolved_at.split(' ')[0];
-          if (resolveDate && resolveDate <= dateStr) {
+          if (resolveDate && resolveDate === dateStr) {
             resolvedCount++;
           }
         }
       });
 
-      cumulativeReported.push(reportedCount);
-      cumulativeResolved.push(resolvedCount);
+      dailyReported.push(reportedCount);
+      dailyResolved.push(resolvedCount);
     });
 
     const burnupLabels = sortedBurnupDates.map(d => {
@@ -1739,8 +1775,8 @@ function renderCharts(filteredBins) {
     const ctxBurnup = document.getElementById('burnupChart').getContext('2d');
     if (burnupChartInstance) {
       burnupChartInstance.data.labels = burnupLabels;
-      burnupChartInstance.data.datasets[0].data = cumulativeReported;
-      burnupChartInstance.data.datasets[1].data = cumulativeResolved;
+      burnupChartInstance.data.datasets[0].data = dailyReported;
+      burnupChartInstance.data.datasets[1].data = dailyResolved;
       burnupChartInstance.update();
     } else {
       burnupChartInstance = new Chart(ctxBurnup, {
@@ -1749,8 +1785,8 @@ function renderCharts(filteredBins) {
           labels: burnupLabels,
           datasets: [
             {
-              label: 'Total Reported',
-              data: cumulativeReported,
+              label: 'Daily Reported',
+              data: dailyReported,
               borderColor: 'hsl(38, 100%, 50%)',
               backgroundColor: 'hsla(38, 100%, 50%, 0.1)',
               borderWidth: 3,
@@ -1759,8 +1795,8 @@ function renderCharts(filteredBins) {
               pointBackgroundColor: 'hsl(38, 100%, 50%)'
             },
             {
-              label: 'Total Resolved',
-              data: cumulativeResolved,
+              label: 'Daily Resolved',
+              data: dailyResolved,
               borderColor: 'hsl(142, 71%, 45%)',
               backgroundColor: 'rgba(34, 197, 94, 0.1)',
               borderWidth: 3,
@@ -1923,7 +1959,28 @@ function renderBins() {
       const idStr = b.bin_id ? b.bin_id.toLowerCase() : '';
       const aisleStr = b.aisle ? b.aisle.toLowerCase() : '';
       const repStr = b.reported_by ? b.reported_by.toLowerCase() : '';
-      return idStr.includes(term) || aisleStr.includes(term) || repStr.includes(term);
+      
+      // Extract floor and mod (database values or parsed from bin_id dynamically)
+      let floorVal = b.floor;
+      let modVal = b.mod;
+      if ((!floorVal || !modVal) && b.bin_id) {
+        const parts = b.bin_id.trim().split('-');
+        if (!floorVal && parts.length >= 2) floorVal = parts[1];
+        if (!modVal && parts.length >= 3) modVal = parts[2].charAt(0);
+      }
+      
+      const floorStr = floorVal ? `floor ${floorVal}`.toLowerCase() : '';
+      const floorNum = floorVal ? String(floorVal).toLowerCase() : '';
+      const modStr = modVal ? `mod ${modVal}`.toLowerCase() : '';
+      const modNum = modVal ? String(modVal).toLowerCase() : '';
+      
+      return idStr.includes(term) || 
+             aisleStr.includes(term) || 
+             repStr.includes(term) ||
+             floorStr.includes(term) || 
+             floorNum === term || 
+             modStr.includes(term) || 
+             modNum === term;
     });
   }
 
