@@ -909,21 +909,15 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
   <div class="form-card">
     <div class="form-title">🗃️ Report a Bin Issue</div>
 
-    <div class="row2">
-      <div class="form-group">
-        <label>Bin ID</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="bin_id" placeholder="e.g. P-1-P181C810" style="flex: 1;" oninput="parseBinId(this.value)"/>
-          <button type="button" id="scan-btn" onclick="startScanner()" style="padding: 0 16px; border-radius: 12px; background: var(--surface); border: 2px solid var(--border); color: var(--text); cursor: pointer; font-weight: 700; transition: var(--transition);">📷 Scan</button>
-        </div>
-        <div id="reader-container" style="display: none; margin-top: 10px; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; background: #000;">
-          <div id="reader" style="width: 100%;"></div>
-          <button type="button" onclick="stopScanner()" style="width: 100%; padding: 12px; background: var(--card); color: var(--u4); border: none; font-weight: bold; cursor: pointer; border-top: 1px solid var(--border);">Cancel Scan</button>
-        </div>
+    <div class="form-group" style="margin-bottom: 24px;">
+      <label>Bin ID</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="bin_id" placeholder="e.g. P-1-P181C810" style="flex: 1;" oninput="parseBinId(this.value)"/>
+        <button type="button" id="scan-btn" onclick="startScanner()" style="padding: 0 16px; border-radius: 12px; background: var(--surface); border: 2px solid var(--border); color: var(--text); cursor: pointer; font-weight: 700; transition: var(--transition);">📷 Scan</button>
       </div>
-      <div class="form-group">
-        <label>Aisle / Zone</label>
-        <input type="text" id="aisle" placeholder="e.g. Aisle 5"/>
+      <div id="reader-container" style="display: none; margin-top: 10px; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; background: #000;">
+        <div id="reader" style="width: 100%;"></div>
+        <button type="button" onclick="stopScanner()" style="width: 100%; padding: 12px; background: var(--card); color: var(--u4); border: none; font-weight: bold; cursor: pointer; border-top: 1px solid var(--border);">Cancel Scan</button>
       </div>
     </div>
     <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
@@ -942,19 +936,13 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
       </div>
       <div class="form-group" style="margin-bottom: 0;">
         <label>🗺️ Aisle</label>
-        <input type="text" id="aisle-manual" placeholder="Auto-filled" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
+        <input type="text" id="aisle" placeholder="Auto-filled" readonly style="background: hsla(222,47%,10%,0.7); color: var(--accent); font-weight: 700; cursor: default;"/>
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-      <div class="form-group">
-        <label>Reported By</label>
-        <input type="text" id="reported_by" placeholder="Your name"/>
-      </div>
-      <div class="form-group">
-        <label>👤 Last Touch</label>
-        <input type="text" id="last_touch" placeholder="Associate ID who last stowed here"/>
-      </div>
+    <div class="form-group">
+      <label>Reported By</label>
+      <input type="text" id="reported_by" placeholder="Your name"/>
     </div>
 
     <div class="form-group">
@@ -1066,6 +1054,24 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
       </div>
     </div>
 
+    <div class="chart-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div class="chart-title" style="font-size:1.1rem; margin: 0; display: flex; align-items: center; gap: 8px;">
+          🏢 Problems by Mod 
+          <span id="floor-problems-count" style="font-size: 0.85rem; color: var(--muted); font-weight: normal; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 12px;">(0 problems)</span>
+        </div>
+        <div class="floor-selector" style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 8px;">
+          <button class="filter-btn active" onclick="selectChartFloor('1', this)" style="padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">Floor 1</button>
+          <button class="filter-btn" onclick="selectChartFloor('2', this)" style="padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">Floor 2</button>
+          <button class="filter-btn" onclick="selectChartFloor('3', this)" style="padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">Floor 3</button>
+          <button class="filter-btn" onclick="selectChartFloor('4', this)" style="padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">Floor 4</button>
+        </div>
+      </div>
+      <div style="position:relative; height:260px; width:100%;">
+        <canvas id="floorModChart"></canvas>
+      </div>
+    </div>
+
   </div>
 
   <div class="dash-controls main-controls">
@@ -1115,8 +1121,19 @@ input[type=text]:focus, textarea:focus, .search-bar:focus {
 
 <!-- RESOLVED SECTION VIEW -->
 <div class="view" id="view-resolved">
-  <div class="dash-controls" style="justify-content: center; margin-bottom: 20px;">
-    <span class="dash-title" style="color: var(--u1); font-size: 1.4rem;">✅ Resolved Issues Archive</span>
+  <div class="dash-controls main-controls" style="margin-bottom: 20px;">
+    <div class="toolbar-header" style="width: 100%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <span class="dash-title" style="color: var(--u1); font-size: 1.4rem; margin: 0;">✅ Resolved Issues Archive</span>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
+        <div class="search-wrapper" style="max-width: 400px; width: 100%;">
+          <input type="text" id="resolved-search-input" placeholder="🔍 Search Last Touch, Floor, Mod, Raised/Resolved By..." oninput="applyResolvedFilters()"/>
+        </div>
+        <select id="resolved-sort-order" class="sort-select" onchange="applyResolvedFilters()" style="border-color: var(--u1);">
+          <option value="desc">Newest Resolved First</option>
+          <option value="asc">Oldest Resolved First</option>
+        </select>
+      </div>
+    </div>
   </div>
   <div class="bins-grid" id="resolved-grid"></div>
 </div>
@@ -1206,6 +1223,7 @@ let boostaChartInstance = null;
 let trendChartInstance = null;
 let urgencyChartInstance = null;
 let burnupChartInstance = null;
+let floorModChartInstance = null;
 
 // Configure Global Chart.js Themes for Dark Mode aesthetics
 if (typeof Chart !== 'undefined') {
@@ -1264,11 +1282,10 @@ function parseBinId(value) {
   const floorEl = document.getElementById('floor');
   const modEl   = document.getElementById('mod');
   const aisleEl = document.getElementById('aisle');
-  const aisleManualEl = document.getElementById('aisle-manual');
   if (!value || !value.trim()) {
     if (floorEl) floorEl.value = '';
     if (modEl)   modEl.value   = '';
-    if (aisleManualEl) aisleManualEl.value = '';
+    if (aisleEl) aisleEl.value = '';
     return;
   }
   const parts = value.trim().split('-');
@@ -1278,9 +1295,8 @@ function parseBinId(value) {
   if (modEl)   modEl.value   = parts.length >= 3 ? parts[2].charAt(0) : '';
   // Aisle: extract 3-digit number from the bin ID (e.g. P-1-P181C810 → 181)
   const aisleMatch = value.match(/\d{3}/);
-  if (aisleMatch) {
-    if (aisleEl) aisleEl.value = aisleMatch[0];
-    if (aisleManualEl) aisleManualEl.value = aisleMatch[0];
+  if (aisleMatch && aisleEl) {
+    aisleEl.value = aisleMatch[0];
   }
 }
 
@@ -1288,7 +1304,7 @@ function parseBinId(value) {
 let isManualMode = false;
 function toggleManualEntry() {
   isManualMode = !isManualMode;
-  const fields = ['floor', 'mod', 'aisle-manual'];
+  const fields = ['floor', 'mod', 'aisle'];
   const btn = document.getElementById('manual-entry-btn');
   
   fields.forEach(id => {
@@ -1488,11 +1504,8 @@ async function submitForm() {
   fd.append('bin_id', document.getElementById('bin_id').value.trim());
   fd.append('floor', document.getElementById('floor').value.trim());
   fd.append('mod', document.getElementById('mod').value.trim());
-  // Use aisle from main field, or fall back to the manual aisle field
-  const aisleVal = document.getElementById('aisle').value.trim() || document.getElementById('aisle-manual').value.trim();
-  fd.append('aisle', aisleVal);
+  fd.append('aisle', document.getElementById('aisle').value.trim());
   fd.append('reported_by', document.getElementById('reported_by').value.trim());
-  fd.append('last_touch', document.getElementById('last_touch').value.trim());
   const description = document.getElementById('description').value.trim();
   
   // Validation for OTHERS
@@ -1553,7 +1566,6 @@ function resetForm() {
   document.getElementById('mod').value = '';
   document.getElementById('aisle').value = '';
   document.getElementById('reported_by').value = '';
-  document.getElementById('last_touch').value = '';
   document.getElementById('description').value = '';
   document.getElementById('image-input').value = '';
   if (document.getElementById('camera-input')) document.getElementById('camera-input').value = '';
@@ -1794,6 +1806,117 @@ function renderCharts(filteredBins) {
       });
     }
 
+    // 4. Floor & Mod Violation Breakdown
+    if (!window.selectedChartFloor) {
+      window.selectedChartFloor = '1';
+    }
+
+    // Find all unique Mods across the entire filtered dataset (to show the same mods on all floors)
+    const allModsSet = new Set();
+    filteredBins.forEach(b => {
+      let m = b.mod;
+      if (!m && b.bin_id) {
+        const parts = b.bin_id.trim().split('-');
+        if (parts.length >= 3) m = parts[2].charAt(0);
+      }
+      if (m) allModsSet.add(m);
+    });
+    const sortedMods = Array.from(allModsSet).sort();
+
+    // Now, filter the bins by the selected floor (normalized)
+    const targetFloor = String(window.selectedChartFloor).trim().replace(/^0+/, '');
+    const binsOnSelectedFloor = filteredBins.filter(b => {
+      let f = b.floor;
+      if (!f && b.bin_id) {
+        const parts = b.bin_id.trim().split('-');
+        if (parts.length >= 2) f = parts[1];
+      }
+      const normF = f ? String(f).trim().replace(/^0+/, '') : '';
+      return normF === targetFloor;
+    });
+
+    // Calculate total problems (violations) on this floor
+    let totalFloorViolations = 0;
+    binsOnSelectedFloor.forEach(b => {
+      const cats = b.boosta_categories || [];
+      totalFloorViolations += cats.length;
+    });
+    
+    // Update count in HTML
+    const countEl = document.getElementById('floor-problems-count');
+    if (countEl) {
+      countEl.textContent = `(${totalFloorViolations} problems)`;
+    }
+
+    // Populate counts for each mod on this floor
+    const locationMap = {}; // "Mod M" -> { B:0, O1:0, O2:0, S:0, T:0, A:0, OTHERS:0 }
+    sortedMods.forEach(m => {
+      locationMap[`Mod ${m}`] = { B:0, O1:0, O2:0, S:0, T:0, A:0, OTHERS:0 };
+    });
+
+    binsOnSelectedFloor.forEach(b => {
+      let m = b.mod;
+      if (!m && b.bin_id) {
+        const parts = b.bin_id.trim().split('-');
+        if (parts.length >= 3) m = parts[2].charAt(0);
+      }
+      m = m || 'Unknown';
+      const locKey = `Mod ${m}`;
+      
+      if (!locationMap[locKey]) {
+        locationMap[locKey] = { B:0, O1:0, O2:0, S:0, T:0, A:0, OTHERS:0 };
+      }
+      
+      const cats = b.boosta_categories || [];
+      if (!cats.length) return;
+      cats.forEach(c => {
+        if (locationMap[locKey][c] !== undefined) locationMap[locKey][c]++;
+        else locationMap[locKey].OTHERS++;
+      });
+    });
+
+    const locationKeys = Object.keys(locationMap).sort();
+    
+    const floorModDatasets = boostaLabels.map((label, index) => {
+      const catKey = ['B', 'O1', 'O2', 'S', 'T', 'A', 'OTHERS'][index];
+      return {
+        label: label,
+        data: locationKeys.map(k => locationMap[k][catKey]),
+        backgroundColor: boostaColors[index],
+        stack: 'Stack 0'
+      };
+    });
+
+    const ctxFloorMod = document.getElementById('floorModChart').getContext('2d');
+    if (floorModChartInstance) {
+      floorModChartInstance.data.labels = locationKeys;
+      floorModChartInstance.data.datasets = floorModDatasets;
+      floorModChartInstance.update();
+    } else {
+      floorModChartInstance = new Chart(ctxFloorMod, {
+        type: 'bar',
+        data: {
+          labels: locationKeys,
+          datasets: floorModDatasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: 'hsl(215, 25%, 75%)' }, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, color: 'hsl(215, 25%, 75%)' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+          }
+        }
+      });
+    }
+
   } catch(e) {
     console.error("Chart Rendering Error:", e);
   }
@@ -2011,13 +2134,68 @@ function resolvedCard(b) {
   </div>`;
 }
 
+function applyResolvedFilters() {
+  renderResolvedBins();
+}
+
 function renderResolvedBins() {
   const grid = document.getElementById('resolved-grid');
   if (!grid) return;
-  const resolvedBins = currentBinsData.filter(b => b.status === 'resolved');
   
+  let resolvedBins = currentBinsData.filter(b => b.status === 'resolved');
+  
+  // 1. Search Filter
+  const searchInput = document.getElementById('resolved-search-input');
+  const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  if (term) {
+    resolvedBins = resolvedBins.filter(b => {
+      // Extract floor and mod (database values or parsed from bin_id dynamically)
+      let floorVal = b.floor;
+      let modVal = b.mod;
+      if ((!floorVal || !modVal) && b.bin_id) {
+        const parts = b.bin_id.trim().split('-');
+        if (!floorVal && parts.length >= 2) floorVal = parts[1];
+        if (!modVal && parts.length >= 3) modVal = parts[2].charAt(0);
+      }
+      
+      const lastTouch = (b.last_touch || '').toLowerCase();
+      const floorStr = floorVal ? `floor ${floorVal}`.toLowerCase() : '';
+      const floorNum = floorVal ? String(floorVal).toLowerCase() : '';
+      const modStr = modVal ? `mod ${modVal}`.toLowerCase() : '';
+      const modNum = modVal ? String(modVal).toLowerCase() : '';
+      const reportedBy = (b.reported_by || '').toLowerCase();
+      const resolvedBy = (b.resolved_by || '').toLowerCase();
+      const binId = (b.bin_id || '').toLowerCase();
+      
+      return lastTouch.includes(term) || 
+             floorStr.includes(term) || 
+             floorNum === term || 
+             modStr.includes(term) || 
+             modNum === term || 
+             reportedBy.includes(term) || 
+             resolvedBy.includes(term) || 
+             binId.includes(term);
+    });
+  }
+
+  // 2. Sort Filter (Oldest/Newest Resolved First)
+  const sortOrderSelect = document.getElementById('resolved-sort-order');
+  const sortOrder = sortOrderSelect ? sortOrderSelect.value : 'desc';
+  
+  function parseUTC(ts) {
+    if (!ts) return new Date(0);
+    if (!ts.endsWith('Z') && !ts.includes('+')) return new Date(ts + 'Z');
+    return new Date(ts);
+  }
+  
+  resolvedBins.sort((a, b) => {
+    const timeA = parseUTC(a.resolved_at || a.timestamp).getTime();
+    const timeB = parseUTC(b.resolved_at || b.timestamp).getTime();
+    return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+  });
+
   if (!resolvedBins.length) {
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">✨</div><div>No resolved issues yet</div></div>';
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">✨</div><div>No resolved issues match the selected filters.</div></div>';
     return;
   }
   
@@ -2048,9 +2226,15 @@ async function resolveRecord(id, currentStatus) {
       return;
     }
     
+    let lastTouch = prompt('👤 Last Touch:\nPlease enter the name of the associate who last stowed (else write NA):');
+    if (lastTouch === null) return; // User clicked Cancel
+    lastTouch = lastTouch.trim();
+    if (!lastTouch) lastTouch = 'NA';
+    
     // Save state and show modal
     pendingResolveId = id;
     pendingResolveName = resolvedBy.trim();
+    pendingLastTouch = lastTouch;
     document.getElementById('resolve-modal-overlay').style.display = 'flex';
 
   } else {
@@ -2058,7 +2242,7 @@ async function resolveRecord(id, currentStatus) {
     await fetch('/api/bins/' + id + '/resolve', { 
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resolved_by: '' })
+      body: JSON.stringify({ resolved_by: '', last_touch: '' })
     });
     
     toast('✅ Status updated to Open');
@@ -2070,11 +2254,13 @@ async function resolveRecord(id, currentStatus) {
 
 let pendingResolveId = null;
 let pendingResolveName = null;
+let pendingLastTouch = null;
 
 function closeResolveModal() {
   document.getElementById('resolve-modal-overlay').style.display = 'none';
   pendingResolveId = null;
   pendingResolveName = null;
+  pendingLastTouch = null;
 }
 
 function triggerResolveUpload(useCamera) {
@@ -2093,6 +2279,7 @@ function triggerResolveUpload(useCamera) {
     
     const resolveId = pendingResolveId;
     const resolveName = pendingResolveName;
+    const lastTouch = pendingLastTouch;
     closeResolveModal();
     
     if (!file) { toast('❌ Resolved bin photo is required.'); return; }
@@ -2124,6 +2311,7 @@ function triggerResolveUpload(useCamera) {
         canvas.toBlob(async blob => {
           const fd = new FormData();
           fd.append('resolved_by', resolveName);
+          fd.append('last_touch', lastTouch);
           fd.append('image', blob, 'resolved.jpg');
           
           toast('⏳ Uploading image and updating status...');
@@ -2273,6 +2461,14 @@ function autoFillAisle(val) {
 document.getElementById('bin_id').addEventListener('input', (e) => {
   autoFillAisle(e.target.value);
 });
+
+function selectChartFloor(floor, btn) {
+  window.selectedChartFloor = floor;
+  const buttons = btn.parentElement.querySelectorAll('.filter-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBins();
+}
 </script>
 
 <!-- FULL SCREEN OVERLAY -->
